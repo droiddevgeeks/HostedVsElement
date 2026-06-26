@@ -1,0 +1,1041 @@
+<title>Hosted Checkout vs Element — Cashfree Integration Guide</title>
+<style>
+  :root {
+    --paper: #F5F8F6;
+    --card: #FFFFFF;
+    --ink: #0E1714;
+    --ink-soft: #46534E;
+    --ink-faint: #6C7A74;
+    --line: #DBE4DF;
+    --line-soft: #E8EEEB;
+    --accent: #0B6E4F;
+    --accent-deep: #073D2C;
+    --cool: #1E8A7A;
+    --warm: #B5702A;
+    --warm-soft: #F3E7D6;
+    --cool-soft: #DCEFEA;
+    --emerald-soft: #DBEDE3;
+
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Menlo", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+
+    --measure: 70ch;
+    --step--1: 0.86rem;
+    --step-0: 1.0625rem;
+    --step-1: 1.28rem;
+    --step-2: 1.62rem;
+    --step-3: 2.15rem;
+    --step-4: clamp(2.4rem, 1.6rem + 3.4vw, 3.6rem);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 120px;
+  }
+
+  .col {
+    max-width: var(--measure);
+    margin-inline: auto;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 56px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cool), var(--accent) 45%, var(--warm));
+    opacity: 0.5;
+  }
+  h1 {
+    font-size: var(--step-4);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    font-weight: 720;
+    margin: 0 0 28px;
+    text-wrap: balance;
+  }
+  h1 .vs {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.42em;
+    vertical-align: middle;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    padding: 0 0.35em;
+  }
+  .standfirst {
+    font-size: var(--step-1);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 60ch;
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* ---------- the lede callout ---------- */
+  .lede {
+    background: var(--accent-deep);
+    color: #EAF3EE;
+    border-radius: 14px;
+    padding: 34px 36px;
+    margin: 0 auto 72px;
+    max-width: var(--measure);
+    position: relative;
+    overflow: hidden;
+  }
+  .lede::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--cool), #2FBF95 50%, var(--warm));
+  }
+  .lede .tag {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7FD9BC;
+    margin: 0 0 14px;
+  }
+  .lede p { margin: 0; line-height: 1.62; color: #DCEDE5; }
+  .lede strong { color: #FFFFFF; font-weight: 650; }
+
+  /* ---------- section scaffolding ---------- */
+  section { margin-bottom: 80px; }
+  .sec-head {
+    max-width: var(--measure);
+    margin: 0 auto 28px;
+  }
+  .sec-num {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-size: var(--step-3);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: var(--step-1);
+    letter-spacing: -0.01em;
+    font-weight: 660;
+    margin: 40px 0 14px;
+    max-width: var(--measure);
+    margin-inline: auto;
+  }
+  h4 {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin: 26px 0 10px;
+  }
+  p { margin: 0 0 18px; }
+  .col p, .col ul, .col ol, .col h4 { max-width: var(--measure); margin-inline: auto; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  ul, ol { padding-left: 1.25em; }
+  li { margin-bottom: 9px; }
+  li::marker { color: var(--accent); }
+
+  .meta-line {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    background: var(--line-soft);
+    border-radius: 8px;
+    padding: 12px 16px;
+    line-height: 1.7;
+    max-width: var(--measure);
+    margin: 0 auto 22px;
+  }
+  .meta-line b { color: var(--accent-deep); font-weight: 650; }
+
+  /* ---------- spectrum hero ---------- */
+  .spectrum {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px 28px 30px;
+    max-width: var(--measure);
+    margin: 0 auto;
+  }
+  .axis-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+  }
+  .axis-labels .right { text-align: right; }
+  .axis-labels b { display: block; color: var(--ink); letter-spacing: 0; font-family: var(--sans); font-size: var(--step-0); font-weight: 640; margin-bottom: 2px; }
+  .track {
+    height: 8px;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--cool), var(--accent) 48%, var(--warm));
+    margin-bottom: 26px;
+    position: relative;
+  }
+  .stations {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .station {
+    border-top: 3px solid var(--st, var(--accent));
+    background: var(--paper);
+    border-radius: 0 0 10px 10px;
+    padding: 16px 16px 18px;
+  }
+  .station.cool { --st: var(--cool); }
+  .station.mid { --st: var(--accent); }
+  .station.warm { --st: var(--warm); }
+  .station .name {
+    font-weight: 680;
+    font-size: var(--step-0);
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+  }
+  .station .owns {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .station .owns span { display: block; }
+  .station .who {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--st, var(--accent));
+    margin: 10px 0 4px;
+  }
+
+  /* ---------- flow diagrams (terminal cards) ---------- */
+  .flow {
+    background: #0C1512;
+    color: #C9D8D1;
+    border-radius: 12px;
+    padding: 0;
+    max-width: var(--measure);
+    margin: 24px auto 26px;
+    overflow: hidden;
+    border: 1px solid #15241E;
+  }
+  .flow-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 16px;
+    background: #0A120F;
+    border-bottom: 1px solid #15241E;
+  }
+  .flow-bar i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .flow-bar i:nth-child(1) { background: #E06C5B; }
+  .flow-bar i:nth-child(2) { background: #D9A441; }
+  .flow-bar i:nth-child(3) { background: #57B894; }
+  .flow-bar span {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    color: #6F8579;
+    margin-left: 8px;
+  }
+  .flow pre {
+    margin: 0;
+    padding: 20px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: auto;
+  }
+  .flow pre b { color: #6FD3AC; font-weight: 600; }
+  .flow pre .dim { color: #6F8579; }
+
+  /* ---------- callouts ---------- */
+  .callout {
+    max-width: var(--measure);
+    margin: 28px auto;
+    border-radius: 12px;
+    padding: 22px 24px 22px 26px;
+    border-left: 4px solid var(--accent);
+    background: var(--emerald-soft);
+  }
+  .callout.warn { border-left-color: var(--warm); background: var(--warm-soft); }
+  .callout .lbl {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    margin: 0 0 8px;
+    font-weight: 600;
+  }
+  .callout.warn .lbl { color: #7A4A12; }
+  .callout p { margin: 0; }
+  .callout strong { font-weight: 660; }
+
+  /* ---------- tables ---------- */
+  .table-wrap {
+    max-width: var(--measure);
+    margin: 22px auto;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-wrap.wide { max-width: 1080px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+    background: var(--card);
+  }
+  th, td {
+    text-align: left;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+  }
+  thead th {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    white-space: nowrap;
+  }
+  th[data-st="cool"] { color: var(--cool); box-shadow: inset 0 -3px 0 var(--cool); }
+  th[data-st="mid"]  { color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+  th[data-st="warm"] { color: var(--warm); box-shadow: inset 0 -3px 0 var(--warm); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { font-weight: 600; color: var(--ink); }
+  td .tn { font-variant-numeric: tabular-nums; }
+  tbody tr:hover td { background: #F0F5F2; }
+
+  .pill {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .pill.lo { background: var(--cool-soft); color: #0C5E52; }
+  .pill.mid { background: var(--emerald-soft); color: var(--accent-deep); }
+  .pill.hi { background: var(--warm-soft); color: #7A4A12; }
+
+  /* ---------- pick-x cards ---------- */
+  .picks { display: grid; gap: 18px; max-width: var(--measure); margin: 22px auto; }
+  .pick {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px 24px;
+    border-top: 3px solid var(--pc, var(--accent));
+  }
+  .pick.cool { --pc: var(--cool); }
+  .pick.mid { --pc: var(--accent); }
+  .pick.warm { --pc: var(--warm); }
+  .pick h4 {
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-1);
+    text-transform: none;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+  }
+  .pick p { margin: 0; }
+  .pick .default {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--pc, var(--accent));
+    margin-top: 12px;
+  }
+
+  /* ---------- tldr ---------- */
+  .tldr {
+    background: var(--accent-deep);
+    color: #DCEDE5;
+    border-radius: 16px;
+    padding: 36px 36px 30px;
+    max-width: var(--measure);
+    margin: 0 auto;
+  }
+  .tldr h2 { color: #fff; font-size: var(--step-2); margin-bottom: 18px; }
+  .tldr ul { padding-left: 1.1em; }
+  .tldr li { margin-bottom: 12px; }
+  .tldr li::marker { color: #6FD3AC; }
+  .tldr strong { color: #fff; }
+
+  hr.div {
+    border: none;
+    border-top: 1px solid var(--line);
+    max-width: var(--measure);
+    margin: 0 auto 80px;
+  }
+
+  /* ---------- entrance ---------- */
+  .reveal { opacity: 0; transform: translateY(14px); animation: rise 0.7s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  @media (max-width: 680px) {
+    .stations { grid-template-columns: 1fr; }
+    .lede, .tldr { padding: 26px 22px; }
+    .masthead { padding: 48px 0 32px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { animation: none; opacity: 1; transform: none; }
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+  /* ---------- interactive flow demo ---------- */
+  .demo { max-width: 780px; margin: 34px auto 8px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px 22px; }
+  .demo-seg { display: flex; gap: 6px; background: var(--paper); border: 1px solid var(--line); border-radius: 99px; padding: 5px; width: max-content; max-width: 100%; margin: 0 auto 24px; }
+  .demo-seg button { font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.02em; border: none; background: transparent; color: var(--ink-soft); padding: 8px 16px; border-radius: 99px; cursor: pointer; white-space: nowrap; }
+  .demo-seg button.is-on { background: var(--accent); color: #fff; }
+  .demo-stage { display: flex; gap: 30px; align-items: center; justify-content: center; flex-wrap: wrap; }
+
+  .phone { position: relative; width: 248px; flex: 0 0 auto; background: #0C1512; border-radius: 30px; padding: 12px; box-shadow: 0 18px 40px -18px rgba(8,40,30,.55); }
+  .phone-notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 70px; height: 15px; background: #0C1512; border-radius: 0 0 11px 11px; z-index: 3; }
+  .phone-screen { position: relative; height: 432px; border-radius: 20px; overflow: hidden; background: var(--paper); }
+
+  .demo .scr { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  .demo .scr.m { background: var(--paper); }
+  .demo .scr.cf { background: #E9F5EF; }
+  .demo .scr.upi { background: #0E1A23; color: #DDE8EF; }
+  .demo .scr-anim { position: absolute; inset: 0; display: flex; flex-direction: column; animation: scrin .45s cubic-bezier(.2,.7,.2,1); }
+  @keyframes scrin { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: none; } }
+
+  .demo .scr-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 16px 12px; font-weight: 650; font-size: 0.9rem; }
+  .demo .scr.upi .scr-head { justify-content: center; }
+  .demo .scr-badge { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 7px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+  .demo .scr-badge.m { background: var(--line-soft); color: var(--ink-soft); }
+  .demo .scr-badge.c { background: var(--emerald-soft); color: var(--accent-deep); }
+  .demo .scr-badge.b { background: var(--warm-soft); color: #7A4A12; }
+
+  .demo .scr-body { flex: 1; padding: 8px 16px 16px; display: flex; flex-direction: column; }
+  .demo .scr-body.gap { gap: 9px; }
+  .demo .scr-body.center { align-items: center; justify-content: center; gap: 8px; text-align: center; }
+  .demo small { color: var(--ink-faint); font-size: 0.74rem; }
+  .demo .scr.upi small { color: #8FA6B3; }
+
+  .demo .row { display: flex; align-items: center; gap: 10px; }
+  .demo .grow { flex: 1; display: flex; flex-direction: column; }
+  .demo .row small { font-size: 0.7rem; }
+  .demo .thumb { width: 38px; height: 38px; border-radius: 9px; background: linear-gradient(135deg, var(--cool), var(--accent)); }
+  .demo .hr { height: 1px; background: var(--line); margin: 12px 0; }
+  .demo .totline { display: flex; justify-content: space-between; font-size: 0.92rem; }
+  .demo .pay { margin-top: auto; border: none; background: var(--accent); color: #fff; font-weight: 650; font-size: 0.9rem; padding: 12px; border-radius: 10px; cursor: default; font-family: var(--sans); }
+  .demo .scr.upi .pay { background: #2E78C8; }
+  .demo .powered { text-align: center; font-family: var(--mono); font-size: 0.6rem; color: var(--ink-faint); margin-top: 8px; letter-spacing: 0.04em; }
+
+  .demo .pm { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 0.85rem; }
+  .demo .pm-ico { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 0.58rem; font-weight: 700; color: #fff; }
+  .demo .pm-ico.upi { background: #0C8A6A; } .demo .pm-ico.card { background: #3A3F5C; } .demo .pm-ico.nb { background: #B5702A; } .demo .pm-ico.wal { background: #7A4AC0; }
+  .demo .chev { color: var(--ink-faint); }
+
+  .demo .tabs { display: flex; gap: 6px; }
+  .demo .tabs span { flex: 1; text-align: center; font-size: 0.78rem; padding: 7px; border-radius: 8px; background: #fff; border: 1px solid var(--line); color: var(--ink-soft); }
+  .demo .tabs span.on { border-color: var(--accent); color: var(--accent-deep); font-weight: 650; }
+  .demo .appgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .demo .appchip { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .demo .appchip i { width: 34px; height: 34px; border-radius: 9px; display: block; }
+  .demo .appchip small { font-size: 0.58rem; }
+  .demo .appchip.g i { background: #1A73E8; } .demo .appchip.p i { background: #5F259F; } .demo .appchip.b i { background: #00B9F1; } .demo .appchip.o i { background: #FF7F00; }
+
+  .demo .sec-lbl { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); margin-top: 2px; }
+  .demo .cardbox { display: flex; flex-direction: column; gap: 7px; }
+  .demo .cardrow { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; font-size: 0.78rem; color: var(--ink-faint); }
+  .demo .cardbrand { font-family: var(--mono); letter-spacing: 2px; color: var(--line); }
+  .demo .cardrow2 { display: flex; gap: 7px; }
+  .demo .cardrow2 .fld { flex: 1; background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; font-size: 0.78rem; color: var(--ink-faint); }
+
+  .demo .ovl { position: absolute; inset: 0; background: rgba(8,18,15,.64); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #fff; }
+  .demo .ovl b { font-size: 0.9rem; }
+  .demo .dim .scr-body { filter: saturate(.5) opacity(.55); }
+
+  .demo .spin { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; animation: spin .8s linear infinite; }
+  .demo .scr.cf .spin, .demo .scr.m .spin { border: 3px solid var(--line); border-top-color: var(--accent); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .demo .upi-amt { font-size: 1.7rem; font-weight: 720; letter-spacing: -0.02em; }
+  .demo .pinrow { display: flex; gap: 7px; }
+  .demo .pinrow i { width: 9px; height: 9px; border-radius: 50%; background: #3A5366; }
+  .demo .check { width: 54px; height: 54px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; }
+
+  .demo .wire { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  .demo .node { font-family: var(--mono); font-size: 0.72rem; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 7px 14px; }
+  .demo .node.cf { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .demo .line { position: relative; width: 2px; height: 26px; background: var(--line); overflow: hidden; }
+  .demo .pkt { position: absolute; left: -2px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pkt 1.5s ease-in-out infinite; }
+  .demo .pkt.d2 { animation-delay: .4s; }
+  @keyframes pkt { 0% { top: -8px; opacity: 0; } 25% { opacity: 1; } 80% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+  .demo .wire-cap { margin-top: 8px; }
+
+  .demo-side { flex: 1 1 230px; min-width: 220px; max-width: 310px; }
+  .demo .cap-owner { display: inline-block; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 9px; border-radius: 99px; font-weight: 600; margin-bottom: 14px; }
+  .demo .own-merchant { background: var(--line-soft); color: var(--ink-soft); }
+  .demo .own-cashfree { background: var(--emerald-soft); color: var(--accent-deep); }
+  .demo .own-backend { background: var(--warm-soft); color: #7A4A12; }
+  .demo .cap-title { font-size: 1.18rem; font-weight: 680; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .demo .cap-body { color: var(--ink-soft); font-size: 0.95rem; line-height: 1.5; min-height: 3em; }
+  .demo-dots { display: flex; gap: 6px; margin: 18px 0; }
+  .demo .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: background .2s; }
+  .demo .dot.on { background: var(--accent); }
+  .demo-ctrls { display: flex; gap: 8px; }
+  .demo-ctrls button { font-family: var(--mono); font-size: 0.78rem; border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+  .demo-ctrls button:hover { border-color: var(--accent); color: var(--accent-deep); }
+  .demo .ctrl-play { background: var(--accent); color: #fff; border-color: var(--accent); min-width: 70px; }
+  .demo-note { font-size: 0.72rem; color: var(--ink-faint); margin: 16px 0 0; }
+
+  @media (max-width: 560px) {
+    .demo-stage { flex-direction: column; }
+    .demo-side { max-width: 100%; text-align: center; }
+    .demo-dots, .demo-ctrls { justify-content: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .demo .scr-anim { animation: none; } .demo .spin { animation: none; } .demo .pkt { animation: none; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead reveal">
+    <p class="eyebrow">Cashfree Payments · Integration guide</p>
+    <h1>Hosted Checkout <span class="vs">vs</span> Element</h1>
+    <p class="standfirst">Three ways to take a payment. One question sorts them: how much of the payment experience do you want to build and own?</p>
+  </header>
+
+  <div class="lede reveal">
+    <p class="tag">The one-paragraph version</p>
+    <p>With <strong>Hosted Checkout</strong>, Cashfree owns the payment screen. The moment your user taps <em>Pay</em>, we render the UI, list every payment mode — card, UPI, net banking, wallets — handle the bank redirects and UPI app hand-offs, and hand you back a result. You build almost nothing. With <strong>Element</strong>, <em>you</em> build the payment UI — your own card fields, your own UPI app list, your own design language — and process the payment through a Cashfree <strong>SDK</strong> (the Mobile SDK on Android/iOS, or Atom JS on web), which handles the plumbing underneath. And with <strong>Direct API</strong>, you build the UI <em>and</em> orchestrate the whole payment yourself against our APIs — no Cashfree SDK in the loop. The rule of thumb: the further right you move, the more control you get and the more you own.</p>
+  </div>
+
+  <!-- ===== SPECTRUM ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01 — The mental model</span>
+      <h2>It's a spectrum, not three boxes</h2>
+    </div>
+    <div class="col">
+      <p>Don't treat these as three disconnected products — they sit on one continuum. There's a single axis every reader, from director to developer, actually cares about: <strong>how much do you have to build and own?</strong></p>
+    </div>
+
+    <div class="spectrum reveal">
+      <div class="axis-labels">
+        <div class="left"><b>Less effort</b>less control</div>
+        <div class="right"><b>More control</b>more effort</div>
+      </div>
+      <div class="track"></div>
+      <div class="stations">
+        <div class="station cool">
+          <div class="name">Hosted Checkout</div>
+          <div class="who">Cashfree owns</div>
+          <p class="owns"><span>· Payment UI</span><span>· Network calls</span><span>· Redirects / UPI / OTP</span><span>· Reconciliation</span></p>
+        </div>
+        <div class="station mid">
+          <div class="name">Element</div>
+          <div class="who">Merchant owns</div>
+          <p class="owns"><span>· Payment UI</span></p>
+          <div class="who">Cashfree SDK owns</div>
+          <p class="owns"><span>· Network calls</span><span>· Redirects / UPI / OTP</span><span>· Reconciliation</span></p>
+        </div>
+        <div class="station warm">
+          <div class="name">Direct API</div>
+          <div class="who">Merchant owns</div>
+          <p class="owns"><span>· Payment UI</span><span>· Network orchestration</span><span>· Redirects / UPI / OTP</span><span>· Status handling</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <p style="margin-top:26px;">The quick way to tell them apart: <strong>Hosted</strong> = our UI, our processing. <strong>Element</strong> = your UI, and a Cashfree SDK (the Mobile SDK, or Atom JS on web) does the processing. <strong>Direct API</strong> = your UI, and you orchestrate the processing yourself against our APIs, with no Cashfree SDK in the loop. The only real difference is how much of that chain you hand to us.</p>
+      <p>Three things stay identical wherever you land:</p>
+      <ol>
+        <li><strong>You always create an order first.</strong> Your backend calls Cashfree's <em>Create Order</em> API and gets back a <code>payment_session_id</code>. Nothing happens client-side without it.</li>
+        <li><strong>You always verify the final status server-side.</strong> The client result is a hint, never the source of truth.</li>
+        <li><strong>Your secret keys never touch the client.</strong> Order creation and status checks live on your backend.</li>
+      </ol>
+      <p>What changes is everything <em>between</em> those two endpoints.</p>
+    </div>
+
+    <div class="col">
+      <p style="margin-top:8px;">Press play to watch the same ₹499 payment run through each model — and notice <strong>who owns each screen</strong>.</p>
+    </div>
+
+    <div class="demo" id="flowdemo"></div>
+
+    <script>
+    (function(){
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function shell(locked){
+        var seg = locked ? '' : '<div class="demo-seg" role="tablist" aria-label="Integration model"><button class="is-on" data-model="hosted">Hosted</button><button data-model="element">Element</button><button data-model="direct">Direct API</button></div>';
+        return seg+'<div class="demo-stage"><div class="phone"><div class="phone-notch"></div><div class="phone-screen"></div></div><div class="demo-side"><span class="cap-owner own-merchant">Merchant UI</span><div class="cap-title"></div><div class="cap-body"></div><div class="demo-dots"></div><div class="demo-ctrls"><button class="ctrl-prev" aria-label="Previous step">‹ Prev</button><button class="ctrl-play">Play</button><button class="ctrl-next" aria-label="Next step">Next ›</button></div><p class="demo-note">Schematic illustration of the flow — not the actual Cashfree UI.</p></div></div>';
+      }
+
+      function head(t, badge, cls){ return '<div class="scr-head"><span>'+t+'</span>'+(badge?'<span class="scr-badge '+cls+'">'+badge+'</span>':'')+'</div>'; }
+      function pm(label, ico, cls){ return '<div class="pm"><span class="pm-ico '+cls+'">'+ico+'</span><span class="grow">'+label+'</span><span class="chev">›</span></div>'; }
+      function app(t, c){ return '<div class="appchip '+c+'"><i></i><small>'+t+'</small></div>'; }
+      var appsHTML = app('GPay','g')+app('PhonePe','p')+app('Paytm','b')+app('BHIM','o');
+
+      var cart = '<div class="scr m">'+head('Your Store','Your UI','m')+'<div class="scr-body"><div class="row"><div class="thumb"></div><div class="grow"><b>Pro Plan</b><small>Annual subscription</small></div><b>₹499</b></div><div class="hr"></div><div class="totline"><span>Total</span><b>₹499</b></div><button class="pay">Pay ₹499</button></div></div>';
+      var modes = '<div class="scr cf">'+head('Pay ₹499','Cashfree','c')+'<div class="scr-body gap">'+pm('UPI','UPI','upi')+pm('Cards','▭','card')+pm('Net Banking','NB','nb')+pm('Wallets','W','wal')+'</div></div>';
+      function merchantBody(){ return '<div class="scr-body gap"><div class="sec-lbl">UPI</div><div class="appgrid">'+appsHTML+'</div><div class="sec-lbl">Card</div><div class="cardbox"><div class="cardrow"><span>Card number</span><span class="cardbrand">▭▭▭▭</span></div><div class="cardrow2"><span class="fld">MM / YY</span><span class="fld">CVV</span></div></div><button class="pay">Pay ₹499</button><div class="powered">Secured by Cashfree SDK</div></div>'; }
+      function elpay(badge, cls){ return '<div class="scr m">'+head('Checkout', badge||'Your UI', cls||'m')+merchantBody()+'</div>'; }
+      function sdkScreen(text){ return '<div class="scr m dim">'+head('Checkout','Your UI','m')+merchantBody()+'<div class="ovl"><div class="spin"></div><b>'+text+'</b><span class="scr-badge c">Cashfree SDK</span></div></div>'; }
+      var upiapp = '<div class="scr upi">'+head('UPI App','','')+'<div class="scr-body center"><div class="upi-amt">₹499.00</div><small>to Acme Pvt Ltd</small><div class="pinrow"><i></i><i></i><i></i><i></i><i></i><i></i></div><button class="pay">Pay &amp; Approve</button></div></div>';
+      var reconcile = '<div class="scr cf">'+head('Processing','Cashfree','c')+'<div class="scr-body center"><div class="spin"></div><b>Reconciling payment…</b></div></div>';
+      var wire = '<div class="scr m">'+head('Checkout','Your backend','b')+'<div class="scr-body center"><div class="wire"><div class="node">Your app</div><div class="line"><i class="pkt"></i></div><div class="node">Your backend</div><div class="line"><i class="pkt d2"></i></div><div class="node cf">Cashfree API</div></div><small class="wire-cap">Pay Order API → returns an action</small></div></div>';
+      var redirect = '<div class="scr upi">'+head('Bank / UPI','You handle this','b')+'<div class="scr-body center"><div class="upi-amt">₹499.00</div><small>your code opened this</small><button class="pay">Approve</button></div></div>';
+      var verify = '<div class="scr m">'+head('Verify','Your backend','b')+'<div class="scr-body center"><div class="spin"></div><b>Polling status + webhook</b><small>you own reconciliation</small></div></div>';
+      function statusCheck(){ return '<div class="scr m">'+head('Checkout','Your UI','m')+'<div class="scr-body center"><div class="spin"></div><b>Confirming payment…</b><small>GET order status → Cashfree API</small></div></div>'; }
+      function success(text){ return '<div class="scr m">'+head('Done','Your UI','m')+'<div class="scr-body center"><div class="check">✓</div><b>Payment successful</b><small>'+text+'</small></div></div>'; }
+
+      var O = {m:'Merchant UI', c:'Cashfree', b:'Your backend'};
+      var W = {m:'merchant', c:'cashfree', b:'backend'};
+      function step(owner, title, body, html){ return {owner:W[owner], ownerLabel:O[owner], title:title, body:body, html:html}; }
+
+      var FLOWS = {
+        hosted: [
+          step('m','Your checkout','You build one screen: the cart and a Pay button.', cart),
+          step('c','Cashfree checkout opens','Tap Pay and our UI slides up with every payment mode.', modes),
+          step('c','UPI app launched','Cashfree fires the UPI app — no code from you.', upiapp),
+          step('c','Cashfree reconciles','OTP / PIN and reconciliation happen inside our flow.', reconcile),
+          step('m','Verify status via API','Back in your app, your backend calls the status API to confirm.', statusCheck()),
+          step('m','Show the result','Status verified as PAID — your app grants value.', success('Confirmed via webhook + status API'))
+        ],
+        element: [
+          step('m','Your payment UI','You build the card fields and UPI grid in your own design.', elpay()),
+          step('c','Hand off to the SDK','You pass the chosen instrument to the Cashfree SDK.', sdkScreen('Cashfree SDK processing…')),
+          step('c','SDK handles UPI / OTP','The SDK launches the UPI app and manages the redirect.', upiapp),
+          step('c','SDK reconciles','The SDK reconciles, then fires its verify callback.', reconcile),
+          step('m','Verify status via API','On the callback, your backend confirms the status with Cashfree.', statusCheck()),
+          step('m','Show the result','Status verified as PAID — your app grants value.', success('SDK callback + your server check'))
+        ],
+        direct: [
+          step('m','Your payment UI','Same custom UI — but no Cashfree SDK on the device.', elpay('Your UI','m')),
+          step('b','Backend calls Pay Order','Your backend hits the Pay Order API and gets an action.', wire),
+          step('b','You handle the redirect','Your code opens the bank page / UPI app yourself.', redirect),
+          step('b','Verify status via API','You poll the status API and process the webhook — all on you.', verify),
+          step('m','Show the result','Status verified as PAID — your app grants value.', success('You own the full reconciliation'))
+        ]
+      };
+
+      function initDemo(demo){
+        var locked = demo.getAttribute('data-lock');
+        demo.innerHTML = shell(locked);
+        var screenEl = demo.querySelector('.phone-screen');
+        var capTitle = demo.querySelector('.cap-title');
+        var capBody  = demo.querySelector('.cap-body');
+        var capOwner = demo.querySelector('.cap-owner');
+        var dotsWrap = demo.querySelector('.demo-dots');
+        var segBtns  = demo.querySelectorAll('.demo-seg button');
+        var bPrev = demo.querySelector('.ctrl-prev');
+        var bNext = demo.querySelector('.ctrl-next');
+        var bPlay = demo.querySelector('.ctrl-play');
+        var model = locked || 'hosted', idx = 0, timer = null, playing = false;
+
+        function render(){
+          var steps = FLOWS[model], s = steps[idx];
+          screenEl.innerHTML = '<div class="scr-anim">'+s.html+'</div>';
+          capTitle.textContent = s.title;
+          capBody.textContent = s.body;
+          capOwner.textContent = s.ownerLabel;
+          capOwner.className = 'cap-owner own-'+s.owner;
+          var d = ''; for(var i=0;i<steps.length;i++){ d += '<i class="dot'+(i===idx?' on':'')+'"></i>'; }
+          dotsWrap.innerHTML = d;
+        }
+        function go(n){ var len = FLOWS[model].length; idx = (n % len + len) % len; render(); }
+        function pause(){ playing = false; bPlay.textContent = reduce ? 'Step ›' : 'Play'; if(timer){ clearInterval(timer); timer = null; } }
+        function play(){ if(reduce){ go(idx+1); return; } playing = true; bPlay.textContent = 'Pause'; if(timer) clearInterval(timer); timer = setInterval(function(){ go(idx+1); }, 2300); }
+
+        bPrev.addEventListener('click', function(){ pause(); go(idx-1); });
+        bNext.addEventListener('click', function(){ pause(); go(idx+1); });
+        bPlay.addEventListener('click', function(){ playing ? pause() : play(); });
+        for(var i=0;i<segBtns.length;i++){ (function(btn){ btn.addEventListener('click', function(){
+          for(var j=0;j<segBtns.length;j++) segBtns[j].classList.remove('is-on');
+          btn.classList.add('is-on'); model = btn.getAttribute('data-model'); idx = 0; pause(); render();
+        }); })(segBtns[i]); }
+
+        if(reduce){ bPlay.textContent = 'Step ›'; }
+        render();
+      }
+
+      function initAll(){ var demos = document.querySelectorAll('.demo'); for(var k=0;k<demos.length;k++) initDemo(demos[k]); }
+      if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initAll); } else { initAll(); }
+    })();
+    </script>
+
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== HOSTED ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02 — Option one</span>
+      <h2>Hosted Checkout</h2>
+    </div>
+    <div class="col">
+      <p class="meta-line"><b>UI:</b> Cashfree &nbsp;·&nbsp; <b>Redirects / UPI / OTP:</b> Cashfree &nbsp;·&nbsp; <b>Your job:</b> create the order, open checkout, read the result</p>
+      <p>When the user taps <em>Pay Now</em> / <em>Proceed to Pay</em>, Cashfree takes over the screen. We render the full payment-mode list, capture the instrument, run 3DS/OTP for cards, fire the UPI collect/intent, and push the user to the bank page for net banking — all of it. You get control back only when the payment reaches a terminal state.</p>
+    </div>
+
+    <div class="flow reveal">
+      <div class="flow-bar"><i></i><i></i><i></i><span>hosted-checkout — flow</span></div>
+<pre>App/Web  <span class="dim">──(1) initiate──▶</span>  Merchant Backend  <span class="dim">──(2) Create Order──▶</span>  Cashfree
+                                            <span class="dim">◀─</span> <b>payment_session_id</b> <span class="dim">─</span>
+App/Web  <span class="dim">◀──(3) session_id─────────────</span>
+   │
+   │ (4) open Cashfree checkout with <b>payment_session_id</b>
+   ▼
+<b>Cashfree Checkout UI</b>  <span class="dim">── renders modes, captures instrument,</span>
+                       <span class="dim">handles 3DS/OTP, UPI, bank redirect</span>
+   │
+   ├─(5a) result ──▶ App/Web        <span class="dim">(UI hint)</span>
+   └─(5b) webhook ──▶ Merchant Backend
+                          │
+                          └─(6) Get Order / Get Payment ──▶ Cashfree  <b>(source of truth)</b></pre>
+    </div>
+
+    <div class="col">
+      <p>Watch it: tap Pay, and Cashfree's checkout takes over until the result comes back.</p>
+    </div>
+    <div class="demo locked" data-lock="hosted"></div>
+
+    <div class="col">
+      <h4>On each platform</h4>
+      <ul>
+        <li><strong>Web:</strong> load the Cashfree JS SDK and call <code>cashfree.checkout({ paymentSessionId })</code> — as a redirect or a drop-in modal.</li>
+        <li><strong>Mobile (Android/iOS):</strong> the Cashfree Mobile SDK exposes a checkout contract — hand it the <code>payment_session_id</code>, the SDK opens the hosted flow and returns via callback.</li>
+      </ul>
+      <h4>Why pick it</h4>
+      <ul>
+        <li><strong>Fastest time-to-live.</strong> Days, not weeks — one screen open, one result callback.</li>
+        <li><strong>Lowest PCI scope.</strong> Raw card data never enters your app or server, so your compliance burden stays minimal.</li>
+        <li><strong>Free upgrades.</strong> New modes, banks, UPI and conversion improvements land automatically. You ship nothing.</li>
+      </ul>
+      <h4>What you give up</h4>
+      <ul>
+        <li><strong>UI control.</strong> It's Cashfree's screen — themeable, but not yours. There's a context switch from your app's look-and-feel.</li>
+        <li><strong>Flow control.</strong> You can't reorder steps or inject your own logic mid-payment.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== ELEMENT ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03 — Option two</span>
+      <h2>Element</h2>
+    </div>
+    <div class="col">
+      <p><strong>Element means your UI, our SDK.</strong> You build the payment screen — your card fields, your UPI app grid, your net-banking list, your wallet tiles — and process the payment through a Cashfree SDK: the <strong>Mobile SDK</strong> on Android/iOS, or <strong>Atom JS</strong> (with Element components) on web. Cashfree never renders a screen; the SDK does the heavy lifting underneath.</p>
+      <p>You collect the instrument in your own components, then pass it to the SDK through a typed contract (a card-payment object, a UPI-payment object). The SDK calls the Cashfree backend, handles the bank-page redirect / UPI app launch / OTP screen, reconciles, and fires a callback. You then confirm status server-side.</p>
+    </div>
+
+    <div class="flow reveal">
+      <div class="flow-bar"><i></i><i></i><i></i><span>element-sdk — flow</span></div>
+<pre><b>Your UI</b> <span class="dim">(card fields / UPI list)</span> ── collects instrument
+   │
+   │ pass instrument via SDK contract <span class="dim">(e.g. CFCardPayment / CFUPIPayment)</span>
+   ▼
+<b>Cashfree SDK</b> ──▶ Cashfree Backend
+   │  <span class="dim">(SDK handles bank redirect, UPI app launch, OTP)</span>
+   ▼
+SDK callback: <b>onPaymentVerify / onPaymentFailure</b> ──▶ Your app
+   │
+   └─ Your backend ── Get Payment status ──▶ Cashfree  <span class="dim">(verify) + webhook</span></pre>
+    </div>
+
+    <div class="col">
+      <p>Watch it: your custom UI collects the instrument, then the SDK handles the redirect and reconciliation.</p>
+    </div>
+    <div class="demo locked" data-lock="element"></div>
+
+    <div class="col">
+      <ul>
+        <li><strong>Mobile:</strong> <em>one</em> Cashfree Mobile SDK serves both Hosted and Element. The contract you call decides the flow — pass a session for hosted, or pass a specific instrument for element. Same dependency, different entry points.</li>
+        <li><strong>Mobile — custom card component (for non-PCI merchants):</strong> the SDK also ships a Cashfree-provided card-number input you embed directly inside your own screen. It looks like part of your UI, but Cashfree captures the card number and processes the payment — raw PAN never touches your code. You get the Element look-and-feel <em>without</em> taking on PCI scope. This is the sweet spot for merchants who want a custom card flow but aren't PCI-certified.</li>
+        <li><strong>Web:</strong> Cashfree <strong>Element components</strong> (and <strong>Atom JS</strong>) give you composable building blocks — a secure card component you mount into your own page — while keeping sensitive-field handling inside Cashfree-controlled context. Same idea as the mobile custom card component: your layout, our secure field.</li>
+      </ul>
+      <p><strong>The big win:</strong> you own the look and feel, but you <em>don't</em> hand-roll the messy parts — redirect handling, UPI intents, OTP capture, retries, reconciliation. The SDK is also a PCI shield: when card capture flows through Cashfree's secure fields rather than your own raw inputs, your compliance scope stays far lower than going Direct API.</p>
+    </div>
+
+    <div class="callout">
+      <p class="lbl">Rule of thumb</p>
+      <p><strong>Element is the default path when you want your own UI.</strong> Only drop to Direct API (below) when you've hit a concrete wall the SDK can't clear.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== DIRECT API ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04 — Option three</span>
+      <h2>Direct API</h2>
+    </div>
+    <div class="col">
+      <p>The UI is still yours — but unlike Element, <strong>there's no Cashfree client SDK in the loop.</strong> Your app talks to <em>your</em> backend, your backend talks to Cashfree's <em>Pay Order</em> API, and Cashfree responds with an action: a redirect URL, a UPI intent, an OTP step. <strong>You</strong> open the bank page, <strong>you</strong> launch the UPI app, <strong>you</strong> submit the OTP, <strong>you</strong> track and verify status. Cashfree is purely backend APIs here.</p>
+    </div>
+
+    <div class="flow reveal">
+      <div class="flow-bar"><i></i><i></i><i></i><span>direct-api — flow</span></div>
+<pre><b>Your UI</b> ── collects instrument
+   │
+App ──▶ Merchant Backend <span class="dim">──(Pay Order)──▶</span> Cashfree
+                          <span class="dim">◀─</span> action: redirect URL / UPI intent / OTP step <span class="dim">─</span>
+   │
+App ── <b>YOU</b> open bank page / launch UPI app / submit OTP
+   │
+App/Backend ── poll Get Payment + webhook ──▶ Cashfree  <span class="dim">(verify)</span></pre>
+    </div>
+
+    <div class="col">
+      <p>Watch it: your backend calls Pay Order, then your code handles the redirect and status — no SDK.</p>
+    </div>
+    <div class="demo locked" data-lock="direct"></div>
+
+    <div class="col">
+      <p><strong>Pick this only if</strong> you need something the SDK won't give you: a fully custom redirect/app-launch experience, server-to-server flows (headless, IVR, your own native bridge), or you're consolidating multiple PSPs behind one in-house payment layer. <strong>The cost:</strong> you now own redirect handling, UPI intent edge cases, OTP UX, retry logic — and the heaviest PCI burden, since raw card data hitting your servers widens your compliance scope.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== PLATFORM ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05 — Platform view</span>
+      <h2>Web vs Mobile: what you actually import</h2>
+    </div>
+    <div class="col">
+      <p>The spectrum is the concept; here's how it maps to real dependencies.</p>
+      <h3 style="margin-top:24px;">Web</h3>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>You want…</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td>Hosted Checkout</td><td><strong>Cashfree JS SDK</strong> — <code>cashfree.checkout({ paymentSessionId })</code>, as redirect or drop-in modal</td></tr>
+          <tr><td>Element (your UI)</td><td><strong>Cashfree Element components</strong> mounted into your page, with <strong>Atom JS</strong> providing the payment contract for instrument submission</td></tr>
+          <tr><td>Direct API</td><td>Your backend orchestrates Cashfree's <strong>Pay Order</strong> API; you handle redirects, UPI, OTP, and status yourself</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col">
+      <p>Key web nuance: even in Element, sensitive card capture should run through Cashfree-controlled secure components/iframes so your page DOM never sees the raw PAN. That's what keeps a browser-based Element integration from widening into full PCI scope.</p>
+      <h3>Mobile (Android / iOS)</h3>
+      <p>The important fact: <strong>there is one Cashfree Mobile SDK, and it handles both Hosted Checkout and Element.</strong> You don't pick a different library — you pick a different <em>contract</em>:</p>
+      <ul>
+        <li>Pass a <code>payment_session_id</code> to the checkout entry point → <strong>Hosted</strong> flow (Cashfree's UI opens).</li>
+        <li>Pass a specific instrument object (card / UPI / net banking) → <strong>Element</strong> flow (your UI already collected it; the SDK just processes).</li>
+      </ul>
+      <p>In both cases the SDK owns the hard parts on-device: launching the UPI app via intent, handling the bank page in a secure web view, OTP capture, and firing a verification callback at the terminal state. Direct API is available too — but on mobile you'd be re-implementing UPI intents and redirect web views by hand, which is exactly what the SDK exists to spare you.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== MATRIX ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06 — Reference</span>
+      <h2>The matrix: model × platform</h2>
+    </div>
+    <div class="table-wrap wide">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Web</th>
+            <th>Mobile (Android / iOS)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hosted Checkout</td>
+            <td>JS SDK <code>checkout()</code> — redirect or modal. Cashfree renders all modes.</td>
+            <td>Mobile SDK, checkout contract with <code>payment_session_id</code>. Cashfree UI opens.</td>
+          </tr>
+          <tr>
+            <td>Element</td>
+            <td>Element components + Atom JS. Your UI; secure fields + processing by Cashfree.</td>
+            <td>One Mobile SDK, instrument contract (card/UPI/etc.). Your UI; SDK does redirects, app-launch, reconciliation. Custom card component available for non-PCI merchants.</td>
+          </tr>
+          <tr>
+            <td>Direct API</td>
+            <td>Backend → Pay Order API. You handle redirects/UPI/OTP/status in browser + server.</td>
+            <td>Backend → Pay Order API. You hand-roll UPI intents, bank web views, OTP, status.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== STATUS ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">07 — Don't skip this</span>
+      <h2>Status verification: the part everyone gets wrong</h2>
+    </div>
+    <div class="col">
+      <p>This gets its own section because it's the #1 integration bug, and it behaves differently across the spectrum.</p>
+    </div>
+
+    <div class="callout warn">
+      <p class="lbl">The trap</p>
+      <p><strong>The client result is never the source of truth.</strong> A user can close the app mid-redirect, lose network right after paying, or hit back on the bank page. The on-device/in-browser callback can say "success," "failure," or <em>nothing at all</em> — none of it authoritative.</p>
+    </div>
+
+    <div class="col">
+      <p>The authoritative answer always comes from <strong>two server-side mechanisms</strong>, and you should use both:</p>
+      <ol>
+        <li><strong>Webhooks</strong> — Cashfree pushes the terminal payment status to your backend. Your primary, push-based signal.</li>
+        <li><strong>Get Order / Get Payment status API</strong> — your backend pulls the status on demand (when the user lands back, or as a reconciliation sweep). Your fallback for missed webhooks.</li>
+      </ol>
+      <p>How responsibility shifts across the spectrum:</p>
+      <ul>
+        <li><strong>Hosted Checkout:</strong> Cashfree reconciles internally and hands you a result; you still confirm via webhook + status API before fulfilling.</li>
+        <li><strong>Element:</strong> the SDK fires a verification callback after its own reconciliation, but you <em>still</em> confirm server-side before granting value.</li>
+        <li><strong>Direct API:</strong> there's no SDK reconciliation. You are fully responsible for polling and webhooks. Skipping it here doesn't degrade gracefully — it breaks.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <p class="lbl">The one rule</p>
+      <p><strong>Never fulfill an order</strong> — ship goods, unlock a subscription, mark paid — off a client callback alone. Wait for the server-confirmed terminal state.</p>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== DECISION TABLE ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">08 — Side by side</span>
+      <h2>The decision table</h2>
+    </div>
+    <div class="table-wrap wide">
+      <table>
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th data-st="cool">Hosted Checkout</th>
+            <th data-st="mid">Element</th>
+            <th data-st="warm">Direct API</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>UI ownership</td><td>Cashfree</td><td>Merchant</td><td>Merchant</td></tr>
+          <tr><td>Redirects / UPI / OTP</td><td>Cashfree</td><td>Cashfree SDK</td><td>Merchant</td></tr>
+          <tr><td>Reconciliation</td><td>Cashfree</td><td>Cashfree SDK</td><td>Merchant</td></tr>
+          <tr><td>Dev effort</td><td><span class="pill lo">Lowest</span></td><td><span class="pill mid">Medium</span></td><td><span class="pill hi">Highest</span></td></tr>
+          <tr><td>UI / UX control</td><td>Low (themeable)</td><td>High</td><td>Total</td></tr> 
+          <tr><td>New modes / banks</td><td>Automatic</td><td>Mostly automatic</td><td>You add them</td></tr>
+          <tr><td>Maintenance burden</td><td>Cashfree's</td><td>Shared</td><td>Yours</td></tr>
+          <tr><td>Status verification</td><td>Server-confirm</td><td>Server-confirm</td><td>You own it fully</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="div">
+
+  <!-- ===== PICKS ===== -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">09 — Decide</span>
+      <h2>Pick X if…</h2>
+    </div>
+    <div class="picks">
+      <div class="pick cool">
+        <h4>Hosted Checkout</h4>
+        <p>You want to be live this week, you don't have a dedicated payments team, payment UX isn't a competitive differentiator, or you want PCI scope as small as it gets.</p>
+        <span class="default">→ Default for most merchants</span>
+      </div>
+      <div class="pick mid">
+        <h4>Element</h4>
+        <p>Payment UX <em>is</em> part of your brand — card fields and a UPI grid that look native, no jarring context switch — but you have no appetite for hand-rolling redirects, UPI intents, OTP capture, and reconciliation. Custom look, none of the dangerous plumbing.</p>
+        <span class="default">→ Default for design-led, high-volume merchants</span>
+      </div>
+      <div class="pick warm">
+        <h4>Direct API</h4>
+        <p>You have a real payments engineering team and a concrete requirement the SDK can't meet: a headless/server-to-server flow, your own multi-PSP abstraction, or a redirect/app-launch experience you must control end to end. Go in knowing you own the full maintenance and PCI burden.</p>
+        <span class="default">→ Only when you've hit a real wall</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TLDR ===== -->
+  <div class="tldr">
+    <h2>TL;DR</h2>
+    <ul>
+      <li><strong>Hosted</strong> = our UI, our plumbing. Create an order, open checkout, confirm status. Least work, least control.</li>
+      <li><strong>Element</strong> = your UI, our SDK. You build the screen; the Cashfree Mobile SDK (or Atom JS on web) drives network + redirects + reconciliation.</li>
+      <li><strong>Direct API</strong> = your UI, and you orchestrate the whole payment yourself against our APIs — no Cashfree SDK in the loop. Most control, most responsibility.</li>
+      <li>One Mobile SDK covers both Hosted and Element; on web it's the JS SDK for Hosted, Element components + Atom JS for Element.</li>
+      <li>Whatever you pick: create the order server-side, and <strong>confirm the final status server-side</strong> before you fulfill.</li>
+    </ul>
+  </div>
+
+</div>
